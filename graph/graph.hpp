@@ -12,76 +12,47 @@
 
 namespace origin {
 
-
-// The base class of all vertices in an undirected adjancency list. 
-struct undirected_vertex_base
+// A labeled vertex with source and target edges. This is specialized for the
+// empty case, which associates no label.
+template<typename T = empty>
+struct undirected_vertex
 {
-  undirected_vertex_base()
-    : edges_()
+  undirected_vertex() = default;
+
+  undirected_vertex(T const& t)
+    : edges_(), data(t)
   { }
 
   edge_list const& edges() const { return edges_; }
 
   std::size_t degree() const { return edges_.size(); }
-  
+
   edge_list edges_;
-};
-
-// A labeled vertex with source and target edges. This is specialized for the
-// empty case, which associates no label.
-template<typename T = empty>
-struct undirected_vertex : undirected_vertex_base
-{
-  undirected_vertex(T const& t)
-    : undirected_vertex_base(), data(t)
-  { }
-  
   T data;
-};
-
-template<>
-struct undirected_vertex<empty> : undirected_vertex
-{
-  using undirected_vertex::undirected_vertex;
 };
 
 
 // Edges
 
-// The base class of all edges in a directed graph. 
-struct undirected_edge_base
-{
-  undirected_edge_base(vertex u, vertex v)
-    : verts(u, v)
-  { }
-
-  vertex first() const { return verts.first; }
-  vertex second() const { return verts.second; }
-
-  edge_pair verts;
-};
-
-
 // An labeled edge with source and target vertexes. This is specialized for the
 // empty case, which associates no label.
 template<typename T = empty>
-struct undirected_edge : undirected_edge_base
+struct undirected_edge
 {
+  // TODO: Value-initialize the data element or not? We currently do not.
   undirected_edge(vertex u, vertex v)
-    : undirected_edge_base(u, v)
+    : ends_{u, v}
   { }
   
   undirected_edge(vertex u, vertex v, T const& t)
-    : undirected_edge_base(u, v), data(t)
+    : ends_{u, v}, data(t)
   { }
   
-  T data;
-};
+  vertex first() const { return ends_[0]; }
+  vertex second() const { return ends_[1]; }
 
-template<>
-struct undirected_edge<empty> : undirected_edge_base
-{
-  using undirected_edge_base::undirected_edge_base;
+  vertex ends_[2];
+  T data;
 };
 
 
@@ -114,12 +85,9 @@ struct graph
   // Vertexes
   std::size_t num_vertices() const { return verts_.size(); }
 
-  edge_list out_edges(vertex v) const { return verts_[v].out_edges(); }
-  edge_list in_edges(vertex v) const { return verts_[v].in_edges(); }
+  edge_list edges(vertex v) const { return verts_[v].out_edges(); }
 
-  std::size_t out_degree() const { return verts_[v].out_degree(); }
-  std::size_t in_degree() const { return verts_[v].in_degree(); }
-  std::size_t degree() const { return verts_[v].degree(); }
+  std::size_t degree(vertex v) const { return verts_[v].degree(); }
   
   vertex add_vertex();
   vertex add_vertex(V const&);
@@ -127,8 +95,8 @@ struct graph
   // Edges
   std::size_t num_edges() const { return edges_.size(); }
 
-  vertex first(edge e) const { return get_edge(e).first(); }
-  vertex second(edge e) const { return get_edge(e).second(); }
+  vertex first(edge e) const { return edges_[e].first(); }
+  vertex second(edge e) const { return edges_[e].second(); }
   vertex opposite(edge e, vertex v) const;
 
   edge add_edge(vertex, vertex);
@@ -169,12 +137,13 @@ graph<V, E>::add_vertex(V const& v)
 
 template<typename V, typename E>
 auto
-graph<V, E>::opposite(edge e, vertex v) 
+graph<V, E>::opposite(edge e, vertex v) const -> vertex
 {
-  if (first(e) == v)
+  assert(v == first(e) || v == second(e));
+  if (v == first(e))
     return second(e);
-  else
-    return first(v);
+  else // v == second(e)
+    return first(e);
 }
 
 // TODO: This is a simple graph. Verify that (u, v) does not already exist.
@@ -184,8 +153,8 @@ graph<V, E>::add_edge(vertex u, vertex v)
 {
   edges_.emplace_back(u, v);
   edge e = edges_.size() - 1;
-  verts_[u].edges_.push_back(e);
-  verts_[v].edges_.push_back(e);
+  verts_[u].out_.push_back(e);
+  verts_[v].in_.push_back(e);
   return e;
 }
 
@@ -196,9 +165,11 @@ graph<V, E>::add_edge(vertex u, vertex v, E const& x)
 {
   edges_.emplace_back(u, v, x);
   edge e = edges_.size() - 1;
-  verts_[u].edges_.push_back(e);
-  verts_[v].edges_.push_back(e);
+  verts_[u].out.push_back(e);
+  verts_[v].in_.push_back(e);
   return e;
 }
 
 } // namespace origin
+
+#endif

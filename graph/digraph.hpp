@@ -12,14 +12,15 @@
 
 namespace origin {
 
-
-// The base class of all vertices in a directed adjancency list. This 
-// contains only the linking structure of the vertex: the in and out
-// edges.
-struct directed_vertex_base
+// A labeled vertex with source and target edges. This is specialized for the
+// empty case, which associates no label.
+template<typename T = empty>
+struct directed_vertex
 {
-  directed_vertex_base()
-    : out_(), in_()
+  directed_vertex() = default;
+
+  directed_vertex(T const& t)
+    : out_(), in_(), data(t)
   { }
 
   edge_list const& out_edges() const { return out_; }
@@ -28,68 +29,34 @@ struct directed_vertex_base
   std::size_t out_degree() const { return out_.size(); }
   std::size_t in_degree() const { return in_.size(); }
   std::size_t degree() const { return out_degree() + in_degree(); }
-  
+
   edge_list out_;
   edge_list in_;
-};
-
-// A labeled vertex with source and target edges. This is specialized for the
-// empty case, which associates no label.
-template<typename T = empty>
-struct directed_vertex : directed_vertex_base
-{
-  directed_vertex(T const& t)
-    : directed_vertex_base(), data(t)
-  { }
-  
   T data;
-};
-
-template<>
-struct directed_vertex<empty> : directed_vertex
-{
-  using directed_vertex::directed_vertex;
 };
 
 
 // Edges
 
-// The base class of all edges in a directed graph. This contains only
-// the source and target of the graph.
-struct directed_edge_base
-{
-  directed_edge_base(vertex u, vertex v)
-    : verts(u, v)
-  { }
-
-  vertex source() const { return verts.first; }
-  vertex target() const { return verts.second; }
-
-  edge_pair verts;
-};
-
-
 // An labeled edge with source and target vertexes. This is specialized for the
 // empty case, which associates no label.
 template<typename T = empty>
-struct directed_edge : directed_edge_base
+struct directed_edge
 {
   // TODO: Value-initialize the data element or not? We currently do not.
   directed_edge(vertex u, vertex v)
-    : directed_edge_base(u, v)
+    : ends_{u, v}
   { }
   
   directed_edge(vertex u, vertex v, T const& t)
-    : directed_edge_base(u, v), data(t)
+    : ends_{u, v}, data(t)
   { }
   
-  T data;
-};
+  vertex source() const { return ends_[0]; }
+  vertex target() const { return ends_[1]; }
 
-template<>
-struct directed_edge<empty> : directed_edge_base
-{
-  using directed_edge_base::directed_edge_base;
+  vertex ends_[2];
+  T data;
 };
 
 
@@ -125,9 +92,9 @@ struct digraph
   edge_list out_edges(vertex v) const { return verts_[v].out_edges(); }
   edge_list in_edges(vertex v) const { return verts_[v].in_edges(); }
 
-  std::size_t out_degree() const { return verts_[v].out_degree(); }
-  std::size_t in_degree() const { return verts_[v].in_degree(); }
-  std::size_t degree() const { return verts_[v].degree(); }
+  std::size_t out_degree(vertex v) const { return verts_[v].out_degree(); }
+  std::size_t in_degree(vertex v) const { return verts_[v].in_degree(); }
+  std::size_t degree(vertex v) const { return verts_[v].degree(); }
   
   vertex add_vertex();
   vertex add_vertex(V const&);
@@ -135,8 +102,8 @@ struct digraph
   // Edges
   std::size_t num_edges() const { return edges_.size(); }
 
-  vertex source(edge e) const { return get_edge(e).source(); }
-  vertex target(edge e) const { return get_edge(e).target(); }
+  vertex source(edge e) const { return edges_[e].source(); }
+  vertex target(edge e) const { return edges_[e].target(); }
 
   edge add_edge(vertex, vertex);
   edge add_edge(vertex, vertex, E const&);
@@ -199,3 +166,5 @@ digraph<V, E>::add_edge(vertex u, vertex v, E const& x)
 }
 
 } // namespace origin
+
+#endif

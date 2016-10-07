@@ -63,3 +63,5 @@ struct counted_range
 
 
 } // namespace origin
+
+#endif

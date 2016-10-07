@@ -7,6 +7,7 @@
 #include "utility.hpp"
 
 #include <cstddef>
+#include <vector>
 
 
 namespace origin {
@@ -20,7 +21,17 @@ using vertex = std::size_t;
 // Represents an edge within a graph.
 using edge = std::size_t;
 
-// A pair of vertices representing an edge.
-using vertex_pair = std::pair<vertex, vertex>;
+// A list of incident edges.
+using edge_list = std::vector<edge>;
+
+
+// Construct a label over a vector.
+template<typename T>
+auto vertex_label(std::vector<T>& vec) {
+  return [&vec](vertex v) -> T& { return vec[v]; };
+}
+
 
 } // namespace origin
+
+#endif
