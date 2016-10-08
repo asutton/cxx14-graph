@@ -16,19 +16,25 @@ namespace origin {
 struct empty { };
 
 // Represents a vertex within a graph.
-using vertex = std::size_t;
+using vertex_t = std::size_t;
 
 // Represents an edge within a graph.
-using edge = std::size_t;
+using edge_t = std::size_t;
 
 // A list of incident edges.
-using edge_list = std::vector<edge>;
+using edge_list = std::vector<edge_t>;
 
 
 // Construct a label over a vector.
 template<typename T>
 auto vertex_label(std::vector<T>& vec) {
-  return [&vec](vertex v) -> T& { return vec[v]; };
+  return [&vec](vertex_t v) -> T& { return vec[v]; };
+}
+
+// Construct a label over a vector.
+template<typename T>
+auto edge_label(std::vector<T>& vec) {
+  return [&vec](edge_t e) -> T& { return vec[e]; };
 }
 
 

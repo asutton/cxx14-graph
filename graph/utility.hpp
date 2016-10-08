@@ -4,14 +4,13 @@
 #ifndef GRAPH_UTILITY_HPP
 #define GRAPH_UTILITY_HPP
 
+#include <cassert>
 #include <iterator>
 
 
 namespace origin {
 
 // An iterator whose values are increasing integer values.
-//
-// TODO: This should be a random access iterator.
 template<typename T>
 struct counted_iterator
 {
@@ -19,25 +18,59 @@ struct counted_iterator
   using reference = T;
   using pointer = void;
   using difference_type = std::ptrdiff_t;
-  using iterator_category = std::bidirectional_iterator_tag;
+  using iterator_category = std::random_access_iterator_tag;
 
   counted_iterator(T n)
-    : count(n)
+    : num_(n)
   { }
 
-  T operator*() const { return count; }
+  T operator*() const { return num_; }
+  T operator[](std::ptrdiff_t n) const { return num_ + n; }
 
-  counted_iterator& operator++() { ++count; return *this; }
-  counted_iterator& operator++(int) { auto x = *this; ++count; return x; }
+  void operator->() const = delete;
+  
+  counted_iterator& operator++() { ++num_; return *this; }
+  counted_iterator& operator++(int) { auto x = *this; ++num_; return x; }
 
-  counted_iterator& operator--() { --count; return *this; }
-  counted_iterator& operator--(int) { auto x = *this; --count; return x; }
+  counted_iterator& operator--() { --num_; return *this; }
+  counted_iterator& operator--(int) { auto x = *this; --num_; return x; }
 
-  bool operator==(counted_iterator i) { return count == i.count; }
-  bool operator!=(counted_iterator i) { return count != i.count; }
+  counted_iterator& operator+=(std::ptrdiff_t n) { num_ += n; return *this; }
+  counted_iterator& operator-=(std::ptrdiff_t n) { num_ += n; return *this; }
 
-  T count;
+  bool operator==(counted_iterator i) { return num_ == i.num_; }
+  bool operator!=(counted_iterator i) { return num_ != i.num_; }
+
+  T num_;
 };
+
+template<typename T>
+inline counted_iterator<T>
+operator+(counted_iterator<T> i, std::ptrdiff_t n)
+{
+  return i += n;
+}
+
+template<typename T>
+inline counted_iterator<T>
+operator+(std::ptrdiff_t n, counted_iterator<T> i)
+{
+  return i += n;
+}
+
+template<typename T>
+inline counted_iterator<T>
+operator-(counted_iterator<T> i, std::ptrdiff_t n)
+{
+  return i -= n;
+}
+
+template<typename T>
+inline std::ptrdiff_t
+operator-(counted_iterator<T> i, counted_iterator<T> j)
+{
+  return i.num_ - j.num_;
+}
 
 
 // A range of counted iterators.
