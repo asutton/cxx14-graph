@@ -13,6 +13,7 @@ add_library(graph
   common.cpp
   graph.cpp
   digraph.cpp
+  output.cpp
   dfs.cpp
   queue.cpp
 )

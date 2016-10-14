@@ -2,6 +2,7 @@
 // All rights reserved
 
 #include "../graph.hpp"
+#include "../output.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -96,4 +97,7 @@ main()
 
   // Make sure non-existent edges don't exist.
   assert(!g.has_edge(0, 5));
+
+  print_graph<G> print(std::cout, g);
+  print();
 }

@@ -2,6 +2,7 @@
 // All rights reserved
 
 #include "../digraph.hpp"
+#include "../output.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -83,4 +84,7 @@ main()
   assert(g.has_edge(4, 5));
   assert(g.source(6) == 4);
   assert(g.target(6) == 5);
+
+  print_digraph<G> print(std::cout, g);
+  print();
 }

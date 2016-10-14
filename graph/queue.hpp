@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <queue>
-#include <iostream>
 
 
 namespace origin
@@ -71,6 +70,7 @@ template<typename T, typename C>
 void
 insertion_queue<T, C>::push(T const& key)
 {
+  // FIXME: Use a standard algorithm?
   auto iter = this->c.begin();
   auto limit = this->c.end();
   while (iter != limit && comp(key, *iter))
@@ -82,6 +82,7 @@ template<typename T, typename C>
 void
 insertion_queue<T, C>::push(T&& key)
 {
+  // FIXME: Use a standard algorithm?
   auto iter = this->c.begin();
   auto limit = this->c.end();
   while (iter != limit && comp(key, *iter))
